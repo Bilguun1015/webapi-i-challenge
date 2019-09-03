@@ -58,10 +58,9 @@ server.delete('/api/users/:id',(req, res) => {
     })
 })
 
-server.put('api/users/:id', (req, res) =>{
+server.put('/api/users/:id', (req, res) =>{
     const { id } = req.params;
     const changes = req.body;
-    console.log('hi from put')
     if(!changes.name || !changes.bio){
         res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
     } else{
@@ -79,3 +78,7 @@ server.put('api/users/:id', (req, res) =>{
 
 const port = 8000;
 server.listen(port, () => console.log('api running'));
+
+
+
+
