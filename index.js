@@ -1,69 +1,80 @@
 // implement your API here
 const express = require('express');
 
-const Hubs = require('./data/db.js')
+const Users = require('./data/db.js')
 
 const server = express();
 
 server.use(express.json());
 
 server.get('/api/users', (req, res) => {
-    Hubs.find().then(users => {
-        
+    Users.find().then(users => {
         res.status(200).json(users);
     }).catch(error => {
-        res.status(500).json({message : 'error getting the list of users'})
+        res.status(500).json({error : "The users information could not be retrieved."})
     })
 })
 
 server.get('/api/users/:id', (req, res) => {
 
-    Hubs.find().then(hubs => {
-        
-        res.status(200).json(hubs);
+    Users.find().then(users => {
+        if(users){
+            res.status(200).json(users);
+        } else {
+            res.status(404).json({ message: "The user with the specified ID does not exist." })
+        }
     }).catch(error => {
-        res.status(500).json({message : 'error getting the user'})
+        res.status(500).json({ error: "The user information could not be retrieved." })
     })
 })
 
 server.post('/api/users', (req, res) => {
     const userInformation = req.body
-    Hubs.insert(userInformation)
-    .then(hub => {
-        res.status(201).json(hub)
-    })
-    .catch(error => {
-        res.status(500).json({message: 'error adding the hub'})
-    })
+    if(!userInformation.name || !userInformation.bio){
+        res.status(400).json({message: "Please provide name and bio for the user"})
+    } else {
+        Users.insert(userInformation)
+        .then(user => {
+            res.status(201).json(user)
+        })
+        .catch(error => {
+            res.status(500).json({error: 'There was an error while saving the user to the database.'})
+        })
+    }
 })
 
-server.delete('/hubs/:id',(req, res) => {
-    const hubId = req.params.id;
-    Hubs.remove(hubId)
+server.delete('/api/users/:id',(req, res) => {
+    const userID = req.params.id;
+    Users.remove(userID)
     .then(deleted => {
         if(deleted){
-            res.status(200).json({message: "susseffully removed"})
+            res.status(200).json({message: "user susseffully removed"})
         } else {
-            res.status(404).json({message: "hub not found"})
+            res.status(404).json({ message: "The user with the specified ID does not exist." })
         }
     })
     .catch(error => {
-        res.status(500).json({message: 'error removing the hub'})
+        res.status(500).json({error: 'The user could not be removed'})
     })
 })
 
-server.put('/hubs/:id', (req, res) =>{
+server.put('api/users/:id', (req, res) =>{
     const { id } = req.params;
-
     const changes = req.body;
-
-    Hubs.update(id, changes).then(updated => {
-        if(updated){
-            res.status(200).json(updated)
-        } else {
-            res.status(404).json({message: "hub not found"})
-        }
-    }).catch(error => res.status(500).json({message: "error updating hub"}))
+    console.log('hi from put')
+    if(!changes.name || !changes.bio){
+        res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+    } else{
+        Users
+            .update(id, changes).then(updated => {
+                if(updated){
+                    res.status(200).json(updated)
+                } else {
+                    res.status(404).json({ message: "The user with the specified ID does not exist." })
+                }
+            })
+            .catch(error => res.status(500).json({message: "error updating user"}))
+    }
 })
 
 const port = 8000;
